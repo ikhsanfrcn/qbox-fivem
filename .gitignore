@@ -1,0 +1,20 @@
+.replxx_history
+txData/default/
+txData/Qbox_98A3FF.base/server.cfg
+txData/Qbox_98A3FF.base/server.cfg.bkp
+txData/Qbox_98A3FF.base/permissions.cfg
+txData/Qbox_98A3FF.base/cache/
+
+# VPS
+alpine/
+fx.tar.xz
+fx25963.tar.xz
+run.sh
+
+# Local
+server/
+ServerStarter.bat
+
+#Maps
+txData/Qbox_98A3FF.base/resources/\[Cayo_Island\]/
+txData/Qbox_98A3FF.base/resources/\[interiors\]/
