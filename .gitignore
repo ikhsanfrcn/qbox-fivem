@@ -12,7 +12,7 @@ fx25963.tar.xz
 run.sh
 
 # Local
-server/
+/server/
 ServerStarter.bat
 
 #Maps
