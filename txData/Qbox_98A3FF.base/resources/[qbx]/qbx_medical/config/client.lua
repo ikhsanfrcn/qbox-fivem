@@ -38,8 +38,10 @@ return {
     laststandReviveInterval = 360,
     deathTime = 300,
 
-    forceInjury = 35, -- Maximum amount of damage a player can take before limb damage & effects are forced to occur
-    healthDamage = 5, -- Minimum damage done to health before checking for injuries
+    -- forceInjury = 35, -- Maximum amount of damage a player can take before limb damage & effects are forced to occur
+    -- healthDamage = 5, -- Minimum damage done to health before checking for injuries
+    forceInjury = 50,
+    healthDamage = 10,
     maxInjuryChanceMulti = 3, -- Maximum chance of an injury from damage above healthDamage
     forceInjuryWeapons = { -- Define which weapons will always cause injuries
         [weaponClasses.HIGH_CALIBER] = true,
