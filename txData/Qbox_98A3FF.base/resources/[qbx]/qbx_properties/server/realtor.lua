@@ -3,20 +3,23 @@ local sharedConfig = require 'config.shared'
 
 lib.addCommand('createproperty', {
     help = 'Create a property at your current location',
+    restricted = 'group.admin'
 }, function(source)
     local player = exports.qbx_core:GetPlayer(source)
 
-    if player.PlayerData.job.name ~= 'realestate' then exports.qbx_core:Notify(source, 'Not a realtor', 'error') return end
+    -- if player.PlayerData.job.name ~= 'realestate' then exports.qbx_core:Notify(source, 'Not a realtor', 'error') return end
+    if not exports.qbx_core:IsOptin(source) then exports.qbx_core:Notify(source, locale('error.not_optin'), 'error') return end
 
     TriggerClientEvent('qbx_properties:client:createProperty', source)
 end)
 
 RegisterNetEvent('qbx_properties:server:createProperty', function(interiorIndex, data, propertyCoords, garageCoords)
     local playerSource = source --[[@as number]]
-    local player = exports.qbx_core:GetPlayer(playerSource)
+    -- local player = exports.qbx_core:GetPlayer(playerSource)
     local playerCoords = GetEntityCoords(GetPlayerPed(playerSource))
 
-    if player.PlayerData.job.name ~= 'realestate' then return end
+    -- if player.PlayerData.job.name ~= 'realestate' then return end
+    if not exports.qbx_core:IsOptin(source) then exports.qbx_core:Notify(source, locale('error.not_optin'), 'error') return end
     if not garageCoords and #(playerCoords - propertyCoords) > 5.0 then return end
     if garageCoords and #(playerCoords - garageCoords.xyz) > 5.0 then return end
 

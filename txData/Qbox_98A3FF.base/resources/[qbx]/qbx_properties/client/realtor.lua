@@ -157,3 +157,16 @@ RegisterNetEvent('qbx_properties:client:createProperty', function()
         Wait(3000)
     end
 end)
+
+RegisterNetEvent('qbx_properties:client:editGarage', function(propertyId)
+    playerCoords = GetEntityCoords(cache.ped)
+    garageCoords = nil
+    garageHeading = 0.0
+    
+    addGaragePoint()
+    
+    if garageCoords then
+        local garageData = vec4(garageCoords.x, garageCoords.y, garageCoords.z + 1.0, garageHeading)
+        TriggerServerEvent('qbx_properties:server:updateProperty', propertyId, 'garage', garageData)
+    end
+end)
