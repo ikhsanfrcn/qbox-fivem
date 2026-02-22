@@ -567,3 +567,95 @@ RegisterNetEvent('qbx_properties:server:removeDecoration', function(objectId)
         webhook = config.discordWebhook
     })
 end)
+
+-- Admin Property Management
+local function isAdmin(source)
+    -- Cek ace permission dan on-duty status
+    if not IsPlayerAceAllowed(source, 'command') then return false end
+    if not exports.qbx_core:IsOptin(source) then return false end
+    return true
+end
+
+lib.callback.register('qbx_properties:callback:isAdmin', function(source)
+    return isAdmin(source)
+end)
+
+RegisterNetEvent('qbx_properties:server:deleteProperty', function(propertyId)
+    local playerSource = source
+    if not isAdmin(playerSource) then return end
+    
+    local property = MySQL.single.await('SELECT * FROM properties WHERE id = ?', {propertyId})
+    if not property then return end
+    
+    -- Delete decorations
+    MySQL.query.await('DELETE FROM properties_decorations WHERE property_id = ?', {propertyId})
+    
+    -- Delete property
+    MySQL.query.await('DELETE FROM properties WHERE id = ?', {propertyId})
+    
+    -- Remove from client
+    local coords = json.decode(property.coords)
+    TriggerClientEvent('qbx_properties:client:removeProperty', -1, vec3(coords.x, coords.y, coords.z))
+    
+    exports.qbx_core:Notify(playerSource, 'Property deleted successfully', 'success')
+    
+    logger.log({
+        source = playerSource,
+        event = 'qbx_properties:server:deleteProperty',
+        message = string.format('Admin deleted property ID: %s', propertyId),
+        webhook = config.discordWebhook
+    })
+end)
+
+RegisterNetEvent('qbx_properties:server:updateProperty', function(propertyId, field, value)
+    local playerSource = source
+    if not isAdmin(playerSource) then return end
+    
+    local property = MySQL.single.await('SELECT * FROM properties WHERE id = ?', {propertyId})
+    if not property then return end
+    
+    -- local oldCoords = json.decode(property.coords)
+    
+    -- Handle different field types
+    -- if field == 'coords' then
+    --     value = json.encode({x = value.x, y = value.y, z = value.z})
+    --     MySQL.update.await('UPDATE properties SET coords = ? WHERE id = ?', {value, propertyId})
+        
+        -- Update client
+        -- TriggerClientEvent('qbx_properties:client:removeProperty', -1, vec3(oldCoords.x, oldCoords.y, oldCoords.z))
+        -- TriggerClientEvent('qbx_properties:client:addProperty', -1, vec3(oldCoords.x, oldCoords.y, oldCoords.z))
+    if field == 'garage' then
+        -- Register new garage if value is not nil
+        if value then
+            value = json.encode({x = value.x, y = value.y, z = value.z, w = value.w})
+            MySQL.update.await('UPDATE properties SET garage = ? WHERE id = ?', {value, propertyId})
+        else
+            -- Remove garage
+            MySQL.update.await('UPDATE properties SET garage = ? WHERE id = ?', {nil, propertyId})
+        end
+    elseif field == 'owner' then
+        -- Reset keyholders when changing owner
+        MySQL.update.await('UPDATE properties SET owner = ?, keyholders = JSON_ARRAY() WHERE id = ?', {value, propertyId})
+    elseif field == 'rent_interval' then
+        MySQL.update.await('UPDATE properties SET rent_interval = ? WHERE id = ?', {value, propertyId})
+    else
+        -- Generic update for other fields
+        MySQL.update.await(string.format('UPDATE properties SET %s = ? WHERE id = ?', field), {value, propertyId})
+    end
+    
+    exports.qbx_core:Notify(playerSource, string.format('Property %s updated successfully', field), 'success')
+    
+    logger.log({
+        source = playerSource,
+        event = 'qbx_properties:server:updateProperty',
+        message = string.format('Admin updated property ID: %s, field: %s', propertyId, field),
+        webhook = config.discordWebhook
+    })
+end)
+
+RegisterNetEvent('qbx_properties:server:startGarageEdit', function(propertyId)
+    local playerSource = source
+    if not isAdmin(playerSource) then return end
+    
+    TriggerClientEvent('qbx_properties:client:editGarage', playerSource, propertyId)
+end)

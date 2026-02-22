@@ -1,6 +1,6 @@
 return {
     serverName = 'Server',
-    defaultSpawn = vec4(-540.58, -212.02, 37.65, 208.88),
+    defaultSpawn = vec4(-1037.85, -2737.79, 19.17, 325.24),
     notifyPosition = 'top-right', -- 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left'
     ---@type { name: string, amount: integer, metadata: fun(source: number): table }[]
     starterItems = { -- Character starting items

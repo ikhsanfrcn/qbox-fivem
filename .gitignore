@@ -4,6 +4,7 @@ txData/Qbox_98A3FF.base/server.cfg
 txData/Qbox_98A3FF.base/server.cfg.bkp
 txData/Qbox_98A3FF.base/permissions.cfg
 txData/Qbox_98A3FF.base/cache/
+txData/Qbox_98A3FF.base/resources/\[npwd\]/npwd/sv_npwd.log
 
 # VPS
 alpine/

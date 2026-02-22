@@ -11,15 +11,15 @@ local concealWhitelist = {}
 local blips = {}
 
 local function createBlip(apartmentCoords, label)
-	local blip = AddBlipForCoord(apartmentCoords.x, apartmentCoords.y, apartmentCoords.z)
-	SetBlipSprite(blip, 40)
-	SetBlipAsShortRange(blip, true)
-	SetBlipScale(blip, 0.8)
-	SetBlipColour(blip, 2)
-	BeginTextCommandSetBlipName('STRING')
-	AddTextComponentString(label)
-	EndTextCommandSetBlipName(blip)
-	return blip
+    local blip = AddBlipForCoord(apartmentCoords.x, apartmentCoords.y, apartmentCoords.z)
+    SetBlipSprite(blip, 40)
+    SetBlipAsShortRange(blip, true)
+    SetBlipScale(blip, 0.8)
+    SetBlipColour(blip, 2)
+    BeginTextCommandSetBlipName('STRING')
+    AddTextComponentString(label)
+    EndTextCommandSetBlipName(blip)
+    return blip
 end
 
 local function prepareKeyMenu()
@@ -119,7 +119,10 @@ end
 
 local function prepareManageMenu()
     local hasAccess = lib.callback.await('qbx_properties:callback:checkAccess')
-    if not hasAccess then exports.qbx_core:Notify(locale('notify.no_access'), 'error') return end
+    if not hasAccess then
+        exports.qbx_core:Notify(locale('notify.no_access'), 'error')
+        return
+    end
     local options = {
         {
             title = locale('menu.manage_keys'),
@@ -143,10 +146,24 @@ local function prepareManageMenu()
             onSelect = function()
                 ToggleDecorating()
             end
-        }
+        },
+        {
+                title = 'Transfer Ownership',
+                icon = 'user-tag',
+                arrow = true,
+                onSelect = function()
+                    local input = lib.inputDialog('Transfer Ownership', {
+                        { type = 'input', label = 'Citizen ID (leave empty to reset)', placeholder = 'ABC12345' }
+                    })
+                    if input then
+                        local citizenid = input[1] == '' and nil or input[1]
+                        TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'owner', citizenid)
+                    end
+                end
+            }
     }
     if isPropertyRental then
-        options[#options+1] = {
+        options[#options + 1] = {
             title = 'Stop Renting',
             icon = 'file-invoice-dollar',
             arrow = true,
@@ -163,6 +180,7 @@ local function prepareManageMenu()
             end
         }
     end
+    
     lib.registerContext({
         id = 'qbx_properties_manageMenu',
         title = locale('menu.manage_property'),
@@ -198,8 +216,10 @@ local function checkInteractions()
                         TriggerServerEvent("illenium-appearance:server:saveAppearance", appearance)
                     end
                 end, {
-                    components = true, componentConfig = { masks = true, upperBody = true, lowerBody = true, bags = true, shoes = true, scarfAndChains = true, bodyArmor = true, shirts = true, decals = true, jackets = true },
-                    props = true, propConfig = { hats = true, glasses = true, ear = true, watches = true, bracelets = true },
+                    components = true,
+                    componentConfig = { masks = true, upperBody = true, lowerBody = true, bags = true, shoes = true, scarfAndChains = true, bodyArmor = true, shirts = true, decals = true, jackets = true },
+                    props = true,
+                    propConfig = { hats = true, glasses = true, ear = true, watches = true, bracelets = true },
                     enableExit = true,
                 })
             end
@@ -255,7 +275,8 @@ end)
 
 RegisterNetEvent('qbx_properties:client:createInterior', function(interiorHash, interiorCoords)
     lib.requestModel(interiorHash, 2000)
-    interiorShell = CreateObjectNoOffset(interiorHash, interiorCoords.x, interiorCoords.y, interiorCoords.z, false, false, false)
+    interiorShell = CreateObjectNoOffset(interiorHash, interiorCoords.x, interiorCoords.y, interiorCoords.z, false, false,
+        false)
     FreezeEntityPosition(interiorShell, true)
     SetModelAsNoLongerNeeded(interiorHash)
 end)
@@ -264,10 +285,12 @@ RegisterNetEvent('qbx_properties:client:loadDecorations', function(decorations)
     for i = 1, #decorations do
         local decoration = decorations[i]
         lib.requestModel(decoration.model, 5000)
-        DecorationObjects[decoration.id] = CreateObjectNoOffset(decoration.model, decoration.coords.x, decoration.coords.y, decoration.coords.z, false, false, false)
+        DecorationObjects[decoration.id] = CreateObjectNoOffset(decoration.model, decoration.coords.x,
+            decoration.coords.y, decoration.coords.z, false, false, false)
         SetEntityCollision(DecorationObjects[decoration.id], true, true)
         FreezeEntityPosition(DecorationObjects[decoration.id], true)
-        SetEntityRotation(DecorationObjects[decoration.id], decoration.rotation.x, decoration.rotation.y, decoration.rotation.z, 2, false)
+        SetEntityRotation(DecorationObjects[decoration.id], decoration.rotation.x, decoration.rotation.y,
+            decoration.rotation.z, 2, false)
         SetModelAsNoLongerNeeded(decoration.model)
     end
 end)
@@ -298,6 +321,8 @@ end)
 
 local function singlePropertyMenu(property, noBackMenu)
     local options = {}
+    local isAdmin = lib.callback.await('qbx_properties:callback:isAdmin', false)
+
     if QBX.PlayerData.citizenid == property.owner or lib.table.contains(json.decode(property.keyholders), QBX.PlayerData.citizenid) then
         options[#options + 1] = {
             title = locale('menu.enter'),
@@ -319,7 +344,9 @@ local function singlePropertyMenu(property, noBackMenu)
                 onSelect = function()
                     local alert = lib.alertDialog({
                         header = string.format('Renting - %s', property.property_name),
-                        content = string.format('Are you sure you want to rent %s for $%s which will be billed every %sh(s)?', property.property_name, property.price, property.rent_interval),
+                        content = string.format(
+                        'Are you sure you want to rent %s for $%s which will be billed every %sh(s)?',
+                            property.property_name, property.price, property.rent_interval),
                         centered = true,
                         cancel = true
                     })
@@ -336,7 +363,8 @@ local function singlePropertyMenu(property, noBackMenu)
                 onSelect = function()
                     local alert = lib.alertDialog({
                         header = string.format('Buying - %s', property.property_name),
-                        content = string.format('Are you sure you want to buy %s for $%s?', property.property_name, property.price),
+                        content = string.format('Are you sure you want to buy %s for $%s?', property.property_name,
+                            property.price),
                         centered = true,
                         cancel = true
                     })
@@ -355,6 +383,50 @@ local function singlePropertyMenu(property, noBackMenu)
             args = { id = property.id }
         }
     end
+
+    -- Admin Options
+    if isAdmin then
+        options[#options + 1] = {
+            title = 'Edit Property',
+            icon = 'pen-to-square',
+            arrow = true,
+            onSelect = function()
+                TriggerEvent('qbx_properties:client:editPropertyMenu', property)
+            end
+        }
+        options[#options + 1] = {
+            title = 'Transfer Ownership',
+            icon = 'user-tag',
+            arrow = true,
+            onSelect = function()
+                local input = lib.inputDialog('Transfer Ownership', {
+                    { type = 'input', label = 'Citizen ID (leave empty to reset)', placeholder = 'ABC12345' }
+                })
+                if input then
+                    local citizenid = input[1] == '' and nil or input[1]
+                    TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'owner', citizenid)
+                end
+            end
+        }
+        options[#options + 1] = {
+            title = 'Delete Property',
+            icon = 'trash',
+            arrow = true,
+            onSelect = function()
+                local alert = lib.alertDialog({
+                    header = 'Delete Property',
+                    content = string.format('Are you sure you want to delete %s? This cannot be undone!',
+                        property.property_name),
+                    centered = true,
+                    cancel = true
+                })
+                if alert == 'confirm' then
+                    TriggerServerEvent('qbx_properties:server:deleteProperty', property.id)
+                end
+            end
+        }
+    end
+
     local menu = 'qbx_properties_propertiesMenu'
     ---@diagnostic disable-next-line: cast-local-type
     if noBackMenu then menu = nil end
@@ -430,7 +502,7 @@ CreateThread(function()
         local sleep = 800
         local playerCoords = GetEntityCoords(cache.ped)
         for i = 1, #properties do
-            if #(playerCoords - properties[i].xyz) < 1.6 then
+            if #(playerCoords - properties[i].xyz) < 2.6 then
                 sleep = 0
                 qbx.drawText3d({ coords = properties[i].xyz, text = locale('drawtext.view_property') })
                 if IsControlJustPressed(0, 38) then
@@ -469,4 +541,157 @@ end)
 RegisterNetEvent('qbx_properties:client:addProperty', function(propertyCoords)
     if lib.table.contains(properties, propertyCoords) then return end
     properties[#properties + 1] = propertyCoords
+end)
+
+RegisterNetEvent('qbx_properties:client:removeProperty', function(propertyCoords)
+    for i = 1, #properties do
+        if properties[i] == propertyCoords then
+            table.remove(properties, i)
+            break
+        end
+    end
+end)
+
+RegisterNetEvent('qbx_properties:client:editPropertyMenu', function(property)
+    local sharedConfig = require 'config.shared'
+    local interiorValues = {}
+    for k in pairs(sharedConfig.interiors) do
+        interiorValues[#interiorValues + 1] = k
+    end
+
+    lib.registerContext({
+        id = 'qbx_properties_editMenu',
+        title = 'Edit Property',
+        menu = 'qbx_properties_propertyMenu',
+        options = {
+            {
+                title = 'Edit Name',
+                icon = 'signature',
+                arrow = true,
+                onSelect = function()
+                    local input = lib.inputDialog('Edit Property Name', {
+                        { type = 'input', label = 'Property Name', default = property.property_name, required = true, min = 4, max = 32 }
+                    })
+                    if input then
+                        TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'property_name', input
+                        [1])
+                    end
+                end
+            },
+            {
+                title = 'Edit Price',
+                icon = 'dollar-sign',
+                arrow = true,
+                onSelect = function()
+                    local input = lib.inputDialog('Edit Property Price', {
+                        { type = 'number', label = 'Price', default = property.price, required = true, min = 1 }
+                    })
+                    if input then
+                        TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'price', input[1])
+                    end
+                end
+            },
+            {
+                title = 'Edit Rent Interval',
+                icon = 'clock',
+                arrow = true,
+                onSelect = function()
+                    local input = lib.inputDialog('Edit Rent Interval', {
+                        { type = 'number', label = 'Rent Interval (hours, 0 = sell only)', default = property.rent_interval or 0, min = 0, max = 168 }
+                    })
+                    if input then
+                        local value = input[1] == 0 and nil or input[1]
+                        TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'rent_interval', value)
+                    end
+                end
+            },
+            {
+                title = 'Edit Interior',
+                icon = 'house',
+                arrow = true,
+                onSelect = function()
+                    local options = {}
+                    for i = 1, #interiorValues do
+                        options[#options + 1] = {
+                            title = interiorValues[i],
+                            icon = 'door-open',
+                            onSelect = function()
+                                TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'interior',
+                                    interiorValues[i])
+                            end
+                        }
+                    end
+                    lib.registerContext({
+                        id = 'qbx_properties_interiorMenu',
+                        title = 'Select Interior',
+                        menu = 'qbx_properties_editMenu',
+                        options = options
+                    })
+                    lib.showContext('qbx_properties_interiorMenu')
+                end
+            },
+            -- {
+            --     title = 'Move Enter Location',
+            --     icon = 'location-dot',
+            --     arrow = true,
+            --     onSelect = function()
+            --         local alert = lib.alertDialog({
+            --             header = 'Move Enter Location',
+            --             content = 'This will move the property entrance to your current location. Continue?',
+            --             centered = true,
+            --             cancel = true
+            --         })
+            --         if alert == 'confirm' then
+            --             local coords = GetEntityCoords(cache.ped)
+            --             TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'coords', coords)
+            --         end
+            --     end
+            -- },
+            {
+                title = 'Edit Garage',
+                icon = 'warehouse',
+                arrow = true,
+                onSelect = function()
+                    TriggerEvent('qbx_properties:client:editGarageMenu', property)
+                end
+            },
+            
+        }
+    })
+    lib.showContext('qbx_properties_editMenu')
+end)
+
+RegisterNetEvent('qbx_properties:client:editGarageMenu', function(property)
+    lib.registerContext({
+        id = 'qbx_properties_garageMenu',
+        title = 'Edit Garage',
+        menu = 'qbx_properties_editMenu',
+        options = {
+            {
+                title = 'Add/Move Garage',
+                icon = 'plus',
+                arrow = true,
+                onSelect = function()
+                    TriggerServerEvent('qbx_properties:server:startGarageEdit', property.id)
+                end
+            },
+            {
+                title = 'Remove Garage',
+                icon = 'trash',
+                arrow = true,
+                onSelect = function()
+                    local alert = lib.alertDialog({
+                        header = 'Remove Garage',
+                        content = 'Are you sure you want to remove the garage from this property?',
+                        centered = true,
+                        cancel = true
+                    })
+                    if alert == 'confirm' then
+                        TriggerServerEvent('qbx_properties:server:updateProperty', property.id, 'garage', nil)
+                    end
+                end
+            }
+        }
+    })
+    lib.showContext('qbx_properties_garageMenu')
 end)

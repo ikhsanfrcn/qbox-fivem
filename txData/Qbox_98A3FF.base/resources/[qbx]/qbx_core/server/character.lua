@@ -5,8 +5,20 @@ local starterItems = require 'config.shared'.starterItems
 
 ---@param license2 string
 ---@param license? string
-local function getAllowedAmountOfCharacters(license2, license)
-    return config.characters.playersNumberOfCharacters[license2] or license and config.characters.playersNumberOfCharacters[license] or config.characters.defaultNumberOfCharacters
+-- local function getAllowedAmountOfCharacters(license2, license)
+--     return config.characters.playersNumberOfCharacters[license2] or license and config.characters.playersNumberOfCharacters[license] or config.characters.defaultNumberOfCharacters
+-- end
+
+local function getAllowedAmountOfCharacters(source, license2, license)
+    local maxCheck = 5 -- batas maksimal mau cek sampai berapa
+
+    for i = maxCheck, 1, -1 do
+        if IsPlayerAceAllowed(source, "multichar." .. i) then
+            return i
+        end
+    end
+
+    return config.characters.defaultNumberOfCharacters
 end
 
 ---@param source Source
@@ -27,7 +39,7 @@ end
 
 lib.callback.register('qbx_core:server:getCharacters', function(source)
     local license2, license = GetPlayerIdentifierByType(source, 'license2'), GetPlayerIdentifierByType(source, 'license')
-    return storage.fetchAllPlayerEntities(license2, license), getAllowedAmountOfCharacters(license2, license)
+    return storage.fetchAllPlayerEntities(license2, license), getAllowedAmountOfCharacters(source, license2, license)
 end)
 
 lib.callback.register('qbx_core:server:getPreviewPedData', function(_, citizenId)
