@@ -1,1 +1,33 @@
-[{"$schema":1,"name":"Ikhsan_Fathurrachman","master":true,"password_hash":"$2a$11$CWJOl1.gyXPHmtu2unJLMOL0MjfHJbCaIcMYmWXQrpjw7yC8Ynn82","providers":{"citizenfx":{"id":"Ikhsan_Fathurrachman","identifier":"fivem:174144","data":{}}},"permissions":[]}]
+[
+  {
+    "$schema": 1,
+    "name": "Ikhsan_Fathurrachman",
+    "master": true,
+    "password_hash": "$2a$11$CWJOl1.gyXPHmtu2unJLMOL0MjfHJbCaIcMYmWXQrpjw7yC8Ynn82",
+    "providers": {
+      "citizenfx": {
+        "id": "Ikhsan_Fathurrachman",
+        "identifier": "fivem:174144",
+        "data": {}
+      }
+    },
+    "permissions": []
+  },
+  {
+    "$schema": 1,
+    "name": "joker",
+    "master": false,
+    "password_hash": "$2a$11$ZUHRChaZxULtpHKYN2d0aOwSu4MitezTQK09M5Lmux.vZDavYqqIm",
+    "password_temporary": true,
+    "providers": {
+      "discord": {
+        "id": "509459488026394634",
+        "identifier": "discord:509459488026394634",
+        "data": {}
+      }
+    },
+    "permissions": [
+      "all_permissions"
+    ]
+  }
+]
